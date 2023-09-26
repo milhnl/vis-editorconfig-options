@@ -1,5 +1,5 @@
 local get_pairs_for =
-  dofile(debug.getinfo(1, 'S').source:sub(2):match('(.*/)') .. 'lib.lua')
+  dofile(debug.getinfo(1, 'S').source:sub(2):match('(.*/)') .. 'core.lua')
 
 local getwinforfile = function(file)
   for win in vis:windows() do
