@@ -17,18 +17,100 @@ local parse_kp = function(line)
 end
 
 local section_to_pattern = function(selector)
-  local r = ''
-  for c in selector:gmatch('.') do
+  local i, token, literal = 0, nil, nil
+  local nexttoken = function(str, index, in_options)
+    local c = str:sub(index, index)
     if c == '*' then
-      r = r .. '[^/]'
-    elseif c == '.' then
-      r = r .. '%.'
+      local len = str:sub(index):match('^%**'):len()
+      if len > 1 then
+        return index + len, 'all'
+      else
+        return index + 1, 'noslash'
+      end
+    elseif c == '[' then
+      local finish = str:find(']', index + 2)
+      if str:sub(index + 1, index + 1) ~= '!' then
+        return finish + 1, 'chars', str:sub(index + 1, finish - 1)
+      else
+        return finish + 1, 'no_chars', str:sub(index + 2, finish - 1)
+      end
+    elseif c == '?' then
+      return index + 1, 'any'
+    elseif in_options and c == ',' then
+      return index + 1, 'nextoption'
+    elseif in_options and c == '}' then
+      return index + 1, 'endoptions'
+    elseif c == '{' then
+      local lower, upper = str:sub(index):match('^{([0-9]+)..([0-9]+)}')
+      if lower and upper then
+        return 5 + lower:len() + upper:len(), 'number', upper
+      else
+        return index + 1, 'options'
+      end
+    elseif c == '\\' then
+      return index + 2, 'literal', str:sub(index + 1, index + 1)
     else
-      r = r .. c
+      return index + 1, 'literal', c
     end
   end
+  local append = function(prefix, suffix)
+    if #prefix == 0 then prefix[1] = '' end
+    if type(suffix) == 'string' then
+      suffix = { suffix }
+    end
+    local newtable = {}
+    for _, a in ipairs(prefix) do
+      for _, b in ipairs(suffix) do
+        table.insert(newtable, a .. b)
+      end
+    end
+    return newtable
+  end
+  local function translate(in_options)
+    local r = {}
+    while i <= #selector do
+      i, token, literal = nexttoken(selector, i, in_options)
+      if token == 'noslash' then
+        r = append(r, '[^/]+')
+      elseif token == 'all' then
+        r = append(r, '.+')
+      elseif token == 'any' then
+        r = append(r, '.')
+      elseif token == 'chars' then
+        r = append(r, '[' .. literal .. ']')
+      elseif token == 'no_chars' then
+        r = append(r, '[^' .. literal .. ']')
+      elseif token == 'number' then
+        r = append(r, '%d+')
+      elseif token == 'nextoption' or token == 'endoptions' then
+        return r
+      elseif token == 'options' then
+        local temp = {}
+        while token ~= 'endoptions' do
+          for _, newPattern in ipairs(translate(true)) do
+            table.insert(temp, newPattern)
+          end
+        end
+        r = append(r, temp)
+      elseif token == 'literal' then
+        r = append(
+          r,
+          (literal or ''):gsub('[^%w]', function(c)
+            return '%' .. c
+          end)
+        )
+      else
+      end
+    end
+    return r
+  end
+  local patterns = translate(false)
   return function(path)
-    return path:match(r)
+    for _, pattern in ipairs(patterns) do
+      if path:match(pattern) then
+        return true
+      end
+    end
   end
 end
 
@@ -102,7 +184,6 @@ local get_pairs = function(sections)
     for key, val in pairs(section.pairs) do
       if all_pairs[key] == nil then
         all_pairs[key] = val ~= 'unset' and val or nil
-        print(key .. ' = ' .. val)
       end
     end
   end
