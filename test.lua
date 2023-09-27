@@ -3,9 +3,11 @@ local core = dofile(
 )
 
 local test = function(section, path)
-  if path:match(core.section_to_pattern(section)) == nil then
-    error(section .. ' does not match ' .. path)
-   end
+  for _, pattern in ipairs(core.section_to_patterns(section)) do
+    if path:match(pattern) == nil then
+      error(pattern .. ' does not match ' .. path)
+    end
+  end
 end
 
 test('eh', 'eh')

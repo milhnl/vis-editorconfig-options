@@ -16,7 +16,7 @@ local parse_kp = function(line)
   return key, val
 end
 
-local section_to_pattern = function(selector)
+local section_to_patterns = function(selector)
   local r = ''
   for c in selector:gmatch('.') do
     if c == '*' then
@@ -27,7 +27,7 @@ local section_to_pattern = function(selector)
       r = r .. c
     end
   end
-  return r
+  return { r }
 end
 
 local parse_file = function(path)
@@ -43,7 +43,7 @@ local parse_file = function(path)
     elseif line:match('^%s*%[.*%]%s*$') then -- section
       config[#config + 1] = {
         ['pairs'] = {},
-        pattern = section_to_pattern(
+        patterns = section_to_patterns(
           line:gsub('^%s*%[', ''):gsub('%]%s*$', '')
         ),
       }
@@ -85,10 +85,12 @@ local get_sections_for = function(configs, path)
   local sections = {}
   for _, config in pairs(configs) do
     for _, section in ipairs(config) do
-      print('selector: ' .. section.pattern)
-      if path:match(section.pattern) then
-        print('path: ' .. path .. ' matches ' .. section.pattern)
-        table.insert(sections, section)
+      for _, pattern in ipairs(section.patterns) do
+        print('selector: ' .. pattern)
+        if path:match(pattern) then
+          print('path: ' .. path .. ' matches ' .. pattern)
+          table.insert(sections, section)
+        end
       end
     end
     if config.root then
@@ -112,7 +114,7 @@ local get_pairs = function(sections)
 end
 
 return {
-  section_to_pattern = section_to_pattern,
+  section_to_patterns = section_to_patterns,
   get_pairs_for = function(path)
     return get_pairs(get_sections_for(get_configs_for(path), path))
   end,
