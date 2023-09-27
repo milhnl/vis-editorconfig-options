@@ -3,9 +3,9 @@ local core = dofile(
 )
 
 local test = function(section, path)
-  if path:match(core.section_to_pattern(section)) == nil then
+  if core.section_to_pattern(section)(path) == nil then
     error(section .. ' does not match ' .. path)
-   end
+  end
 end
 
 test('eh', 'eh')

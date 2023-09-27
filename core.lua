@@ -27,7 +27,9 @@ local section_to_pattern = function(selector)
       r = r .. c
     end
   end
-  return r
+  return function(path)
+    return path:match(r)
+  end
 end
 
 local parse_file = function(path)
@@ -43,9 +45,7 @@ local parse_file = function(path)
     elseif line:match('^%s*%[.*%]%s*$') then -- section
       config[#config + 1] = {
         ['pairs'] = {},
-        pattern = section_to_pattern(
-          line:gsub('^%s*%[', ''):gsub('%]%s*$', '')
-        ),
+        match = section_to_pattern(line:gsub('^%s*%[', ''):gsub('%]%s*$', '')),
       }
     elseif not line:match('^%s*$') and not line:match('^%s*[#;]') then
       print(path .. ': invalid line: ' .. line)
@@ -85,9 +85,7 @@ local get_sections_for = function(configs, path)
   local sections = {}
   for _, config in pairs(configs) do
     for _, section in ipairs(config) do
-      print('selector: ' .. section.pattern)
-      if path:match(section.pattern) then
-        print('path: ' .. path .. ' matches ' .. section.pattern)
+      if section.match(path) then
         table.insert(sections, section)
       end
     end
