@@ -111,6 +111,9 @@ local get_pairs = function(sections)
   return all_pairs
 end
 
-return function(path)
-  return get_pairs(get_sections_for(get_configs_for(path), path))
-end
+return {
+  section_to_pattern = section_to_pattern,
+  get_pairs_for = function(path)
+    return get_pairs(get_sections_for(get_configs_for(path), path))
+  end,
+}

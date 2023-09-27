@@ -1,4 +1,4 @@
-local get_pairs_for =
+local core =
   dofile(debug.getinfo(1, 'S').source:sub(2):match('(.*/)') .. 'core.lua')
 
 local getwinforfile = function(file)
@@ -13,7 +13,7 @@ local apply = function(win)
   if not win.file.path then
     return
   end
-  local settings = get_pairs_for(win.file.path)
+  local settings = core.get_pairs_for(win.file.path)
   local indent_style = (settings.indent_style or ''):lower()
   if indent_style == 'tab' then
     win.options.expandtab = false
