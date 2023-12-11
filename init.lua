@@ -30,7 +30,7 @@ local apply = function(win)
     )
   end
   if settings.max_line_length then
-    win.options.colorcolumn = settings.max_line_length + 1
+    win.options.colorcolumn = math.floor(settings.max_line_length + 1)
   end
 end
 
