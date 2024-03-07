@@ -141,7 +141,7 @@ end
 
 local get_config_files = function(path)
   local config_files =
-    from_cmd("set -- '" .. path:gsub("'", "\\'") .. "'; " .. [[
+    from_cmd("set -- '" .. path:gsub("'", "'\\''") .. "'; " .. [[
       while [ "$1" != / ]; do
         cd "$(dirname "$1")"
         set -- "$PWD"
