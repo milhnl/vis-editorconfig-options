@@ -14,8 +14,8 @@ Then, add `require('vis-editorconfig-options')` to your `visrc`.
 #### Note on vis versions before 0.9
 
 This plugin uses the `options` table, introduced in version 0.9. This version
-is, as of December 2023, not released yet. If you use an older version, you
-will also need
+has been released, but your distribution may not have the package yet. In that
+case, you will also need
 [vis-options-backport](https://github.com/milhnl/vis-options-backport). This
 will 'polyfill' the `options` table for older versions.
 
