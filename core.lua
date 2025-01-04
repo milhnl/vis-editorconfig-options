@@ -133,7 +133,7 @@ local parse_file = function(path)
       print(path .. ': invalid line: ' .. line)
     end
   end
-  for i = 1, #config / 2, 1 do
+  for i = 1, math.floor(#config / 2), 1 do
     config[i], config[#config - i + 1] = config[#config - i + 1], config[i]
   end
   return config
