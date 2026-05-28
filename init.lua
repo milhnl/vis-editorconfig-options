@@ -29,7 +29,7 @@ local apply = function(win)
       or win.options.tabwidth
     )
   end
-  if settings.max_line_length then
+  if settings.max_line_length and tonumber(settings.max_line_length) then
     win.options.colorcolumn = math.floor(settings.max_line_length + 1)
   end
 end
