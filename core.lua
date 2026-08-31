@@ -119,8 +119,18 @@ local parse_file = function(path)
   for line in io.open(path):lines() do
     if line:match('^%s*[^[;#][^=]*=') then -- key-value pair
       local key, val = parse_kp(line)
-      if #config == 0 and key == 'root' then
-        config.root = val == 'true'
+      if #config == 0 then
+        if key == 'root' then
+          config.root = val == 'true'
+        else
+          error(
+            'Warning: '
+              .. path
+              .. ' has a property outside a section: '
+              .. line,
+            0
+          )
+        end
       else
         config[#config].pairs[key] = val
       end

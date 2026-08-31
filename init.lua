@@ -13,7 +13,11 @@ local apply = function(win)
   if not win.file.path then
     return
   end
-  local settings = core.get_pairs_for(win.file.path)
+  local ok, ret = pcall(core.get_pairs_for, win.file.path)
+  if not ok then
+    vis:message(tostring(ret))
+  end
+  local settings = ret
   local indent_style = (settings.indent_style or ''):lower()
   if indent_style == 'tab' then
     win.options.expandtab = false
